@@ -17,6 +17,7 @@ function getSortedCategories(): CategoryGroup[] {
 const initialCategories = getSortedCategories()
 let selectedCategory: string = initialCategories.length > 0 ? initialCategories[0].category : ''
 let searchQuery: string = ''
+let isMobileMenuOpen: boolean = false
 
 /**
  * Extracts a clean hostname (e.g. 'github.com', 'medium.com') from a URL.
@@ -65,13 +66,49 @@ function render() {
   })
 
   app.innerHTML = `
-    <div class="${cn('w-full max-w-full px-4 sm:px-6 md:px-10 py-5 sm:py-7 min-h-screen')}">
+    <div class="${cn('w-full max-w-full px-4 sm:px-6 md:px-10 py-4 sm:py-7 min-h-screen')}">
       
+      <!-- MOBILE ONLY: Hamburger Bar for Collapsible Categories -->
+      <div class="${cn('block lg:hidden mb-4')}">
+        <button 
+          id="mobile-menu-toggle"
+          type="button"
+          aria-expanded="${isMobileMenuOpen}"
+          aria-label="Toggle categories menu"
+          class="${cn(
+            'w-full flex items-center justify-between px-4 py-3 rounded-xl bg-midnight-100 border transition-all duration-200 cursor-pointer shadow-sm select-none',
+            isMobileMenuOpen
+              ? 'border-lime text-lime shadow-[0_0_15px_rgba(204,255,0,0.2)]'
+              : 'border-midnight-300 text-white hover:border-cobalt/50'
+          )}"
+        >
+          <div class="${cn('flex items-center gap-2.5 truncate')}">
+            <span class="${cn('w-2 h-2 rounded-full inline-block bg-lime shadow-[0_0_6px_#ccff00] shrink-0')}"></span>
+            <span class="${cn('text-xs font-mono uppercase tracking-wider text-slate-400 shrink-0')}">Category:</span>
+            <span class="${cn('text-sm font-bold text-white truncate')}">${selectedCategory}</span>
+          </div>
+          <div class="${cn('flex items-center gap-2 shrink-0')}">
+            <span class="${cn('text-xs font-mono px-2 py-0.5 rounded-full bg-midnight-300 text-slate-400')}">
+              ${activeGroup?.links.length || 0}
+            </span>
+            <span class="${cn(
+              'inline-flex items-center justify-center w-8 h-8 rounded-lg bg-midnight-200 text-lime font-bold text-base transition-colors',
+              isMobileMenuOpen ? 'bg-lime text-midnight' : ''
+            )}">
+              ${isMobileMenuOpen ? '✕' : '☰'}
+            </span>
+          </div>
+        </button>
+      </div>
+
       <!-- Two-Column Layout -->
       <div class="${cn('grid grid-cols-1 lg:grid-cols-[290px_1fr] gap-6 lg:gap-8 items-start w-full')}">
         
-        <!-- LEFT PANEL: Alphabetical Categories Sidebar -->
-        <aside class="${cn('lg:sticky lg:top-6 w-full')}">
+        <!-- LEFT PANEL: Categories Sidebar (Collapsible on Mobile, Sticky on Desktop) -->
+        <aside class="${cn(
+          'lg:sticky lg:top-6 w-full transition-all duration-200',
+          isMobileMenuOpen ? 'block' : 'hidden lg:block'
+        )}">
           <div class="${cn('bg-midnight-100 border border-midnight-300 rounded-xl p-4 shadow-sm')}">
             <div class="${cn('flex items-center justify-between pb-3 mb-3 border-b border-midnight-300')}">
               <span class="${cn('text-xs font-bold uppercase tracking-wider text-slate-400')}">Categories</span>
@@ -99,13 +136,13 @@ function render() {
                       >
                         <span class="${cn('flex items-center gap-2.5')}">
                           <span class="${cn(
-                            'w-1.5 h-1.5 rounded-full inline-block transition-colors',
+                            'w-1.5 h-1.5 rounded-full inline-block transition-colors shrink-0',
                             isActive ? 'bg-lime shadow-[0_0_6px_#ccff00]' : 'bg-cobalt shadow-[0_0_6px_#0047ff]'
                           )}"></span>
                           <span>${catGroup.category}</span>
                         </span>
                         <span class="${cn(
-                          'text-xs font-mono px-2 py-0.5 rounded-full transition-colors',
+                          'text-xs font-mono px-2 py-0.5 rounded-full transition-colors shrink-0',
                           isActive ? 'bg-lime text-midnight font-bold' : 'bg-midnight-400 text-slate-400'
                         )}">${count}</span>
                       </button>
@@ -261,14 +298,24 @@ function render() {
  * Event bindings.
  */
 function bindEvents() {
+  // Mobile hamburger menu toggle button
+  const mobileToggle = document.querySelector<HTMLButtonElement>('#mobile-menu-toggle')
+  if (mobileToggle) {
+    mobileToggle.addEventListener('click', () => {
+      isMobileMenuOpen = !isMobileMenuOpen
+      render()
+    })
+  }
+
   // Category navigation buttons
   const catBtns = document.querySelectorAll<HTMLButtonElement>('.category-nav-btn')
   catBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
       const cat = btn.getAttribute('data-category')
-      if (cat && cat !== selectedCategory) {
+      if (cat) {
         selectedCategory = cat
         searchQuery = '' // Reset search when switching categories
+        isMobileMenuOpen = false // Automatically close hamburger menu on mobile
         render()
       }
     })
