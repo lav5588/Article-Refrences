@@ -17,7 +17,7 @@ function getSortedCategories(): CategoryGroup[] {
 const initialCategories = getSortedCategories()
 let selectedCategory: string = initialCategories.length > 0 ? initialCategories[0].category : ''
 let searchQuery: string = ''
-let isMobileMenuOpen: boolean = false
+let isMobileDrawerOpen: boolean = false
 
 /**
  * Extracts a clean hostname (e.g. 'github.com', 'medium.com') from a URL.
@@ -32,10 +32,59 @@ function getHostname(urlString: string): string {
 }
 
 /**
- * Main render function using Tailwind classes merged with the `cn` utility.
+ * Reusable renderer for the category list navigation.
+ */
+function renderCategoryList(sortedCategories: CategoryGroup[]): string {
+  return `
+    <ul class="${cn('flex flex-col gap-2 list-none m-0 p-0')}">
+      ${sortedCategories
+        .map((catGroup) => {
+          const isActive = catGroup.category === selectedCategory
+          const count = catGroup.links.length
+
+          return `
+            <li>
+              <button 
+                class="category-nav-btn ${cn(
+                  'w-full flex items-center justify-between text-left px-3.5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer select-none outline-none',
+                  isActive
+                    ? 'bg-gradient-to-r from-lime/15 to-midnight-200 border border-lime text-lime shadow-[0_0_15px_rgba(204,255,0,0.2)] font-bold'
+                    : 'bg-midnight-200 border border-transparent text-slate-300 hover:bg-midnight-300 hover:border-cobalt/40 hover:text-white hover:translate-x-1'
+                )}" 
+                data-category="${catGroup.category}"
+              >
+                <span class="${cn('flex items-center gap-2.5 min-w-0')}">
+                  <span class="${cn(
+                    'w-1.5 h-1.5 rounded-full inline-block transition-colors shrink-0',
+                    isActive ? 'bg-lime shadow-[0_0_6px_#ccff00]' : 'bg-cobalt shadow-[0_0_6px_#0047ff]'
+                  )}"></span>
+                  <span class="${cn('truncate')}">${catGroup.category}</span>
+                </span>
+                <span class="${cn(
+                  'text-xs font-mono px-2 py-0.5 rounded-full transition-colors shrink-0 ml-2',
+                  isActive ? 'bg-lime text-midnight font-bold' : 'bg-midnight-400 text-slate-400'
+                )}">${count}</span>
+              </button>
+            </li>
+          `
+        })
+        .join('')}
+    </ul>
+  `
+}
+
+/**
+ * Main render function.
  */
 function render() {
   if (!app) return
+
+  // Manage body scroll when mobile drawer is open
+  if (isMobileDrawerOpen) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+  }
 
   const sortedCategories = getSortedCategories()
 
@@ -66,49 +115,96 @@ function render() {
   })
 
   app.innerHTML = `
-    <div class="${cn('w-full max-w-full px-4 sm:px-6 md:px-10 py-4 sm:py-7 min-h-screen')}">
-      
-      <!-- MOBILE ONLY: Hamburger Bar for Collapsible Categories -->
-      <div class="${cn('block lg:hidden mb-4')}">
+    <!-- ===================================================================
+         MOBILE SLIDE-OVER DRAWER (Sidebar Drawer)
+         =================================================================== -->
+    <!-- Backdrop Overlay -->
+    <div 
+      id="drawer-backdrop" 
+      class="${cn(
+        'fixed inset-0 bg-black/80 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300',
+        isMobileDrawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+      )}"
+      aria-hidden="true"
+    ></div>
+
+    <!-- Slide-in Sidebar Panel -->
+    <aside 
+      id="mobile-drawer" 
+      class="${cn(
+        'fixed top-0 bottom-0 left-0 w-[290px] max-w-[85vw] bg-midnight-100 border-r border-midnight-300 z-50 p-5 flex flex-col shadow-[0_0_30px_rgba(0,0,0,0.9)] lg:hidden transition-transform duration-300 ease-in-out',
+        isMobileDrawerOpen ? 'translate-x-0' : '-translate-x-full'
+      )}"
+      role="dialog" 
+      aria-modal="true" 
+      aria-label="Categories menu"
+    >
+      <!-- Drawer Header with Close Button -->
+      <div class="${cn('flex items-center justify-between pb-3.5 mb-3.5 border-b border-midnight-300 shrink-0')}">
+        <div class="${cn('flex items-center gap-2')}">
+          <span class="${cn('text-xs font-bold uppercase tracking-wider text-slate-400')}">Categories</span>
+          <span class="${cn('text-[11px] font-mono px-2 py-0.5 rounded-full bg-midnight-300 text-slate-400 border border-midnight-400')}">
+            ${sortedCategories.length} Total
+          </span>
+        </div>
         <button 
-          id="mobile-menu-toggle"
-          type="button"
-          aria-expanded="${isMobileMenuOpen}"
-          aria-label="Toggle categories menu"
+          id="drawer-close-btn" 
+          type="button" 
+          aria-label="Close categories sidebar"
           class="${cn(
-            'w-full flex items-center justify-between px-4 py-3 rounded-xl bg-midnight-100 border transition-all duration-200 cursor-pointer shadow-sm select-none',
-            isMobileMenuOpen
-              ? 'border-lime text-lime shadow-[0_0_15px_rgba(204,255,0,0.2)]'
-              : 'border-midnight-300 text-white hover:border-cobalt/50'
+            'inline-flex items-center justify-center w-8 h-8 rounded-lg bg-midnight-200 border border-midnight-300 text-slate-300 hover:text-lime hover:border-lime transition-all duration-200 cursor-pointer'
           )}"
         >
-          <div class="${cn('flex items-center gap-2.5 truncate')}">
-            <span class="${cn('w-2 h-2 rounded-full inline-block bg-lime shadow-[0_0_6px_#ccff00] shrink-0')}"></span>
-            <span class="${cn('text-xs font-mono uppercase tracking-wider text-slate-400 shrink-0')}">Category:</span>
-            <span class="${cn('text-sm font-bold text-white truncate')}">${selectedCategory}</span>
-          </div>
-          <div class="${cn('flex items-center gap-2 shrink-0')}">
-            <span class="${cn('text-xs font-mono px-2 py-0.5 rounded-full bg-midnight-300 text-slate-400')}">
-              ${activeGroup?.links.length || 0}
-            </span>
-            <span class="${cn(
-              'inline-flex items-center justify-center w-8 h-8 rounded-lg bg-midnight-200 text-lime font-bold text-base transition-colors',
-              isMobileMenuOpen ? 'bg-lime text-midnight' : ''
-            )}">
-              ${isMobileMenuOpen ? '✕' : '☰'}
-            </span>
-          </div>
+          ✕
         </button>
+      </div>
+
+      <!-- Drawer Scrollable Categories List -->
+      <div class="${cn('flex-1 overflow-y-auto pr-1')}">
+        ${renderCategoryList(sortedCategories)}
+      </div>
+
+      <!-- Drawer Footer Info -->
+      <div class="${cn('pt-4 mt-auto border-t border-midnight-300 text-xs text-slate-500 font-mono flex items-center justify-between shrink-0')}">
+        <span>Article References</span>
+        <span class="${cn('text-lime')}">Midnight Cyber</span>
+      </div>
+    </aside>
+
+    <!-- ===================================================================
+         MAIN CONTAINER
+         =================================================================== -->
+    <div class="${cn('w-full max-w-full px-4 sm:px-6 md:px-10 py-4 sm:py-7 min-h-screen')}">
+      
+      <!-- MOBILE TOP BAR: Hamburger Menu Button & Category Indicator -->
+      <div class="${cn('flex items-center justify-between gap-3 p-3 mb-4 rounded-xl bg-midnight-100 border border-midnight-300 shadow-sm lg:hidden')}">
+        <div class="${cn('flex items-center gap-2.5 min-w-0')}">
+          <button 
+            id="mobile-hamburger-btn" 
+            type="button" 
+            aria-label="Open categories sidebar"
+            class="${cn(
+              'inline-flex items-center justify-center w-9 h-9 rounded-lg bg-midnight-200 border border-midnight-300 text-lime font-bold text-lg hover:border-lime hover:shadow-[0_0_10px_rgba(204,255,0,0.3)] transition-all cursor-pointer shrink-0'
+            )}"
+          >
+            ☰
+          </button>
+          <div class="${cn('min-w-0')}">
+            <span class="${cn('text-[10px] font-mono uppercase tracking-wider text-slate-400 block leading-tight')}">Category</span>
+            <span class="${cn('text-sm font-bold text-white truncate block leading-tight')}">${selectedCategory}</span>
+          </div>
+        </div>
+
+        <span class="${cn('text-xs font-mono px-2.5 py-1 rounded-full bg-lime/15 text-lime border border-lime/30 shrink-0')}">
+          ${activeGroup?.links.length || 0} ${activeGroup?.links.length === 1 ? 'ref' : 'refs'}
+        </span>
       </div>
 
       <!-- Two-Column Layout -->
       <div class="${cn('grid grid-cols-1 lg:grid-cols-[290px_1fr] gap-6 lg:gap-8 items-start w-full')}">
         
-        <!-- LEFT PANEL: Categories Sidebar (Collapsible on Mobile, Sticky on Desktop) -->
-        <aside class="${cn(
-          'lg:sticky lg:top-6 w-full transition-all duration-200',
-          isMobileMenuOpen ? 'block' : 'hidden lg:block'
-        )}">
+        <!-- DESKTOP LEFT PANEL: Sticky Categories Sidebar (Always visible on desktop) -->
+        <aside class="${cn('hidden lg:block lg:sticky lg:top-6 w-full')}">
           <div class="${cn('bg-midnight-100 border border-midnight-300 rounded-xl p-4 shadow-sm')}">
             <div class="${cn('flex items-center justify-between pb-3 mb-3 border-b border-midnight-300')}">
               <span class="${cn('text-xs font-bold uppercase tracking-wider text-slate-400')}">Categories</span>
@@ -117,40 +213,7 @@ function render() {
               </span>
             </div>
 
-            <ul class="${cn('flex flex-col gap-2 list-none m-0 p-0')}">
-              ${sortedCategories
-                .map((catGroup) => {
-                  const isActive = catGroup.category === selectedCategory
-                  const count = catGroup.links.length
-
-                  return `
-                    <li>
-                      <button 
-                        class="category-nav-btn ${cn(
-                          'w-full flex items-center justify-between text-left px-3.5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer select-none outline-none',
-                          isActive
-                            ? 'bg-gradient-to-r from-lime/15 to-midnight-200 border border-lime text-lime shadow-[0_0_15px_rgba(204,255,0,0.2)] font-bold'
-                            : 'bg-midnight-200 border border-transparent text-slate-300 hover:bg-midnight-300 hover:border-cobalt/40 hover:text-white hover:translate-x-1'
-                        )}" 
-                        data-category="${catGroup.category}"
-                      >
-                        <span class="${cn('flex items-center gap-2.5')}">
-                          <span class="${cn(
-                            'w-1.5 h-1.5 rounded-full inline-block transition-colors shrink-0',
-                            isActive ? 'bg-lime shadow-[0_0_6px_#ccff00]' : 'bg-cobalt shadow-[0_0_6px_#0047ff]'
-                          )}"></span>
-                          <span>${catGroup.category}</span>
-                        </span>
-                        <span class="${cn(
-                          'text-xs font-mono px-2 py-0.5 rounded-full transition-colors shrink-0',
-                          isActive ? 'bg-lime text-midnight font-bold' : 'bg-midnight-400 text-slate-400'
-                        )}">${count}</span>
-                      </button>
-                    </li>
-                  `
-                })
-                .join('')}
-            </ul>
+            ${renderCategoryList(sortedCategories)}
           </div>
         </aside>
 
@@ -298,16 +361,34 @@ function render() {
  * Event bindings.
  */
 function bindEvents() {
-  // Mobile hamburger menu toggle button
-  const mobileToggle = document.querySelector<HTMLButtonElement>('#mobile-menu-toggle')
-  if (mobileToggle) {
-    mobileToggle.addEventListener('click', () => {
-      isMobileMenuOpen = !isMobileMenuOpen
+  // Mobile hamburger menu button -> Opens the slide-over sidebar drawer
+  const hamburgerBtn = document.querySelector<HTMLButtonElement>('#mobile-hamburger-btn')
+  if (hamburgerBtn) {
+    hamburgerBtn.addEventListener('click', () => {
+      isMobileDrawerOpen = true
       render()
     })
   }
 
-  // Category navigation buttons
+  // Mobile drawer close button (✕)
+  const drawerCloseBtn = document.querySelector<HTMLButtonElement>('#drawer-close-btn')
+  if (drawerCloseBtn) {
+    drawerCloseBtn.addEventListener('click', () => {
+      isMobileDrawerOpen = false
+      render()
+    })
+  }
+
+  // Backdrop overlay click -> Closes the drawer
+  const backdrop = document.querySelector<HTMLDivElement>('#drawer-backdrop')
+  if (backdrop) {
+    backdrop.addEventListener('click', () => {
+      isMobileDrawerOpen = false
+      render()
+    })
+  }
+
+  // Category navigation buttons (handles both desktop sidebar & mobile drawer)
   const catBtns = document.querySelectorAll<HTMLButtonElement>('.category-nav-btn')
   catBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -315,7 +396,7 @@ function bindEvents() {
       if (cat) {
         selectedCategory = cat
         searchQuery = '' // Reset search when switching categories
-        isMobileMenuOpen = false // Automatically close hamburger menu on mobile
+        isMobileDrawerOpen = false // Automatically close slide-over drawer on mobile
         render()
       }
     })
@@ -347,6 +428,14 @@ function bindEvents() {
   if (clearSearchBtn) clearSearchBtn.addEventListener('click', clearAction)
   if (emptyResetBtn) emptyResetBtn.addEventListener('click', clearAction)
 }
+
+// Global escape key listener to close mobile drawer
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && isMobileDrawerOpen) {
+    isMobileDrawerOpen = false
+    render()
+  }
+})
 
 // Initial render
 render()
