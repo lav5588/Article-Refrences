@@ -313,19 +313,32 @@ function render() {
                           <span class="${cn('text-xs font-mono text-slate-500')}">
                             #${String(idx + 1).padStart(2, '0')}
                           </span>
-                          <a 
-                            href="${item.link}" 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            class="${cn(
-                              'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all duration-200 no-underline',
-                              isEven
-                                ? 'text-cobalt-lighter border-cobalt/80 hover:bg-cobalt/15 hover:border-cobalt-light hover:shadow-[0_0_12px_rgba(0,71,255,0.35)]'
-                                : 'text-lime border-lime/80 hover:bg-lime/15 hover:border-lime-light hover:shadow-[0_0_12px_rgba(204,255,0,0.35)]'
-                            )}"
-                          >
-                            Read Reference &rarr;
-                          </a>
+                          <div class="${cn('flex items-center gap-2')}">
+                            <button
+                              type="button"
+                              class="copy-link-btn ${cn(
+                                'inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1.5 rounded-lg border border-midnight-400 bg-midnight-200 text-slate-300 hover:text-lime hover:border-lime transition-all cursor-pointer select-none'
+                              )}"
+                              data-url="${item.link}"
+                              title="Copy URL to clipboard"
+                            >
+                              <span class="copy-icon">📋</span>
+                              <span class="copy-text">Copy</span>
+                            </button>
+                            <a 
+                              href="${item.link}" 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              class="${cn(
+                                'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all duration-200 no-underline',
+                                isEven
+                                  ? 'text-cobalt-lighter border-cobalt/80 hover:bg-cobalt/15 hover:border-cobalt-light hover:shadow-[0_0_12px_rgba(0,71,255,0.35)]'
+                                  : 'text-lime border-lime/80 hover:bg-lime/15 hover:border-lime-light hover:shadow-[0_0_12px_rgba(204,255,0,0.35)]'
+                              )}"
+                            >
+                              Read &rarr;
+                            </a>
+                          </div>
                         </div>
                       </article>
                     `
@@ -415,6 +428,35 @@ function bindEvents() {
       }
     })
   }
+
+  // Copy link to clipboard buttons
+  const copyBtns = document.querySelectorAll<HTMLButtonElement>('.copy-link-btn')
+  copyBtns.forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const url = btn.getAttribute('data-url')
+      if (url) {
+        try {
+          await navigator.clipboard.writeText(url)
+          const textSpan = btn.querySelector('.copy-text')
+          const iconSpan = btn.querySelector('.copy-icon')
+          if (textSpan && iconSpan) {
+            textSpan.textContent = 'Copied!'
+            iconSpan.textContent = '✓'
+            btn.classList.add('border-lime', 'text-lime')
+            setTimeout(() => {
+              textSpan.textContent = 'Copy'
+              iconSpan.textContent = '📋'
+              btn.classList.remove('border-lime', 'text-lime')
+            }, 2000)
+          }
+        } catch {
+          window.prompt('Copy URL to clipboard:', url)
+        }
+      }
+    })
+  })
 
   // Clear search buttons
   const clearSearchBtn = document.querySelector<HTMLButtonElement>('#btn-clear-search')
