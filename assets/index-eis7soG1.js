@@ -179,14 +179,25 @@
                           <span class="${Y(`text-xs font-mono text-slate-500`)}">
                             #${String(t+1).padStart(2,`0`)}
                           </span>
-                          <a 
-                            href="${e.link}" 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            class="${Y(`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all duration-200 no-underline`,r?`text-cobalt-lighter border-cobalt/80 hover:bg-cobalt/15 hover:border-cobalt-light hover:shadow-[0_0_12px_rgba(0,71,255,0.35)]`:`text-lime border-lime/80 hover:bg-lime/15 hover:border-lime-light hover:shadow-[0_0_12px_rgba(204,255,0,0.35)]`)}"
-                          >
-                            Read Reference &rarr;
-                          </a>
+                          <div class="${Y(`flex items-center gap-2`)}">
+                            <button
+                              type="button"
+                              class="copy-link-btn ${Y(`inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1.5 rounded-lg border border-midnight-400 bg-midnight-200 text-slate-300 hover:text-lime hover:border-lime transition-all cursor-pointer select-none`)}"
+                              data-url="${e.link}"
+                              title="Copy URL to clipboard"
+                            >
+                              <span class="copy-icon">📋</span>
+                              <span class="copy-text">Copy</span>
+                            </button>
+                            <a 
+                              href="${e.link}" 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              class="${Y(`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all duration-200 no-underline`,r?`text-cobalt-lighter border-cobalt/80 hover:bg-cobalt/15 hover:border-cobalt-light hover:shadow-[0_0_12px_rgba(0,71,255,0.35)]`:`text-lime border-lime/80 hover:bg-lime/15 hover:border-lime-light hover:shadow-[0_0_12px_rgba(204,255,0,0.35)]`)}"
+                            >
+                              Read &rarr;
+                            </a>
+                          </div>
                         </div>
                       </article>
                     `}).join(``)}
@@ -207,4 +218,4 @@
         </main>
       </div>
     </div>
-  `,Ve()}function Ve(){let e=document.querySelector(`#mobile-hamburger-btn`);e&&e.addEventListener(`click`,()=>{Q=!0,$()});let t=document.querySelector(`#drawer-close-btn`);t&&t.addEventListener(`click`,()=>{Q=!1,$()});let n=document.querySelector(`#drawer-backdrop`);n&&n.addEventListener(`click`,()=>{Q=!1,$()}),document.querySelectorAll(`.category-nav-btn`).forEach(e=>{e.addEventListener(`click`,()=>{let t=e.getAttribute(`data-category`);t&&(X=t,Z=``,Q=!1,$())})});let r=document.querySelector(`#category-search-input`);r&&r.addEventListener(`input`,e=>{Z=e.target.value,$();let t=document.querySelector(`#category-search-input`);t&&(t.focus(),t.setSelectionRange(Z.length,Z.length))});let i=document.querySelector(`#btn-clear-search`),a=document.querySelector(`#btn-empty-reset`),o=()=>{Z=``,$()};i&&i.addEventListener(`click`,o),a&&a.addEventListener(`click`,o)}window.addEventListener(`keydown`,e=>{e.key===`Escape`&&Q&&(Q=!1,$())}),$();
+  `,Ve()}function Ve(){let e=document.querySelector(`#mobile-hamburger-btn`);e&&e.addEventListener(`click`,()=>{Q=!0,$()});let t=document.querySelector(`#drawer-close-btn`);t&&t.addEventListener(`click`,()=>{Q=!1,$()});let n=document.querySelector(`#drawer-backdrop`);n&&n.addEventListener(`click`,()=>{Q=!1,$()}),document.querySelectorAll(`.category-nav-btn`).forEach(e=>{e.addEventListener(`click`,()=>{let t=e.getAttribute(`data-category`);t&&(X=t,Z=``,Q=!1,$())})});let r=document.querySelector(`#category-search-input`);r&&r.addEventListener(`input`,e=>{Z=e.target.value,$();let t=document.querySelector(`#category-search-input`);t&&(t.focus(),t.setSelectionRange(Z.length,Z.length))}),document.querySelectorAll(`.copy-link-btn`).forEach(e=>{e.addEventListener(`click`,async t=>{t.preventDefault(),t.stopPropagation();let n=e.getAttribute(`data-url`);if(n)try{await navigator.clipboard.writeText(n);let t=e.querySelector(`.copy-text`),r=e.querySelector(`.copy-icon`);t&&r&&(t.textContent=`Copied!`,r.textContent=`✓`,e.classList.add(`border-lime`,`text-lime`),setTimeout(()=>{t.textContent=`Copy`,r.textContent=`📋`,e.classList.remove(`border-lime`,`text-lime`)},2e3))}catch{window.prompt(`Copy URL to clipboard:`,n)}})});let i=document.querySelector(`#btn-clear-search`),a=document.querySelector(`#btn-empty-reset`),o=()=>{Z=``,$()};i&&i.addEventListener(`click`,o),a&&a.addEventListener(`click`,o)}window.addEventListener(`keydown`,e=>{e.key===`Escape`&&Q&&(Q=!1,$())}),$();
