@@ -44,6 +44,23 @@ export const data: CategoryGroup[] = [
     ]
   },
   {
+    category: 'Frontend Development',
+    links: [
+      {
+        link: 'https://medium.com/@rohitkuwar/decoding-the-mystery-a-front-end-developers-guide-to-source-maps-in-react-2675b413673a',
+        title: "Decoding the Mystery: A Front-End Developer's Guide to Source Maps in React",
+        short_description:
+          'A practical guide by Rohit Kuwar explaining how source maps bridge minified production bundles to original source code in React, covering build configurations and production debugging with error monitoring tools.'
+      },
+      {
+        link: 'https://dev.to/griseduardo/husky-and-lint-staged-for-pre-commit-in-react-39nd',
+        title: 'Husky and lint-staged for pre-commit in React',
+        short_description:
+          'A step-by-step tutorial by Eduardo Gris demonstrating how to set up Husky Git hooks and lint-staged in a React application to enforce automated code formatting and linting checks before changes are committed.'
+      }
+    ]
+  },
+  {
     category: 'README Resources',
     links: [
       {
@@ -79,6 +96,12 @@ export const data: CategoryGroup[] = [
   {
     category: 'System Design',
     links: [
+      {
+        link: 'https://medium.com/@nourhansaeed707/functional-vs-non-functional-requirements-in-system-design-6b1b1a3785da',
+        title: 'Functional vs Non-Functional Requirements in System Design',
+        short_description:
+          'An essential system design guide by Nourhan Saeed contrasting functional requirements (core features and user workflows) with non-functional requirements (scalability, latency, availability, and security).'
+      },
       {
         link: 'https://www.geeksforgeeks.org/system-design/unified-modeling-language-uml-sequence-diagrams/',
         title: 'Unified Modeling Language (UML) | Sequence Diagrams',
